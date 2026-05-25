@@ -12,24 +12,29 @@ INSERT INTO tb_categoria (nome) VALUES ('Áudio e Vídeo');
 INSERT INTO tb_categoria (nome) VALUES ('Games');
 INSERT INTO tb_categoria (nome) VALUES ('Serviços');
 
-COMMIT;
-
 -- 2) PRODUTOS
 DECLARE
   v_cat NUMBER;
 BEGIN
   FOR i IN 1..30 LOOP
+
     SELECT id_categoria
     INTO v_cat
     FROM (
-      SELECT id_categoria
+      SELECT 
+        id_categoria,
+        ROW_NUMBER() OVER (ORDER BY id_categoria) AS rn
       FROM tb_categoria
-      ORDER BY id_categoria
     )
-    WHERE ROWNUM = 1
-    OFFSET MOD(i - 1, 8) ROWS FETCH NEXT 1 ROWS ONLY;
+    WHERE rn = MOD(i - 1, 8) + 1;
 
-    INSERT INTO tb_produto (id_categoria, sku, nome, preco_unit, ativo)
+    INSERT INTO tb_produto (
+      id_categoria, 
+      sku, 
+      nome, 
+      preco_unit, 
+      ativo
+    )
     VALUES (
       v_cat,
       'SKU-' || TO_CHAR(i, 'FM0000'),
@@ -46,11 +51,9 @@ BEGIN
       ROUND(DBMS_RANDOM.VALUE(29.90, 7999.90), 2),
       'S'
     );
+
   END LOOP;
 END;
-/
-
-COMMIT;
 
 -- 3) VENDEDORES
 DECLARE
@@ -83,9 +86,7 @@ BEGIN
     );
   END LOOP;
 END;
-/
-
-COMMIT;
+ 
 
 -- 4) CLIENTES
 DECLARE
@@ -129,9 +130,7 @@ BEGIN
     );
   END LOOP;
 END;
-/
-
-COMMIT;
+ 
 
 -- 5) CALENDÁRIO - ÚLTIMOS 24 MESES
 DECLARE
@@ -157,9 +156,7 @@ BEGIN
     v_dt := v_dt + 1;
   END LOOP;
 END;
-/
-
-COMMIT;
+ 
 
 -- 6) VENDAS + ITENS
 DECLARE
@@ -298,6 +295,3 @@ BEGIN
 
   END LOOP;
 END;
-/
-
-COMMIT;
